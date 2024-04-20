@@ -1,65 +1,119 @@
 "use client";
 
-import Link from "next/link";
-import type { NextPage } from "next";
-import { useAccount } from "wagmi";
-import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { Address } from "~~/components/scaffold-eth";
+import React from "react";
+import Head from "next/head";
+import Image from "next/image";
+import bannerImage from "~~/components/assets/flip_the_coin.webp";
+import { Checkpoint } from "~~/components/learn-chainlink/Checkpoint";
+import { CodeText } from "~~/components/learn-chainlink/CodeText";
 
-const Home: NextPage = () => {
-  const { address: connectedAddress } = useAccount();
-
+const Home: React.FC = () => {
   return (
     <>
-      <div className="flex items-center flex-col flex-grow pt-10">
-        <div className="px-5">
-          <h1 className="text-center">
-            <span className="block text-2xl mb-2">Welcome to</span>
-            <span className="block text-4xl font-bold">Scaffold-ETH 2</span>
-          </h1>
-          <div className="flex justify-center items-center space-x-2">
-            <p className="my-2 font-medium">Connected Address:</p>
-            <Address address={connectedAddress} />
-          </div>
-          <p className="text-center text-lg">
-            Get started by editing{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              packages/nextjs/app/page.tsx
-            </code>
-          </p>
-          <p className="text-center text-lg">
-            Edit your smart contract{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              YourContract.sol
-            </code>{" "}
-            in{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              packages/hardhat/contracts
-            </code>
-          </p>
-        </div>
+      <Head>
+        <title>Flip The Coin Crypto - Chainlink Challenge</title>
+      </Head>
+      <div>
+        <div className="min-h-screen bg-blue-50 dark:bg-gray-900 text-gray-800 dark:text-gray-300 transition-colors duration-300">
+          <div className="container mx-auto p-4">
+            <Image
+              src={bannerImage}
+              alt="Chainlink Challenge Banner"
+              layout="responsive"
+              className="w-full max-w-2xl mx-auto" // Adjust max width to max-w-2xl
+            />
+            <h1 className="text-4xl font-bold text-center my-10">Learn Chainlink: Flip The Coin Crypto Challenge</h1>
+            <div className="mx-40 space-y-6">
+              <section id="introduction">
+                <h2 className="text-3xl font-semibold">🚀 Introduction</h2>
+                <p>
+                  Welcome to the Flip The Coin Crypto Challenge! In this challenge, you&apos;ll build a game that
+                  predicts whether the price of Ethereum will go up or down in the next minute using Chainlink.
+                </p>
+              </section>
+              {/* Checkpoint 0 */}
+              <Checkpoint title="Checkpoint 0: 📦 Environment 📚">
+                <p>Before you begin, you need to install the following tools:</p>
+                <ul className="list-disc list-inside space-y-2">
+                  <li>Node (&gt;= v18.17)</li>
+                  <li>Yarn (v1 or v2+)</li>
+                  <li>Git</li>
+                </ul>
+                <p className="mt-4">
+                  Then download the challenge to your computer and install dependencies by running:
+                </p>
+                <CodeText>
+                  <p>
+                    git clone https://github.com/scaffold-eth/se-2-challenges.git challenge-0-simple-nft cd
+                    challenge-0-simple-nft git checkout challenge-0-simple-nft yarn install yarn chain
+                  </p>
+                </CodeText>
+                <p className="mt-4">In a second terminal window, 🛰 deploy your contract (locally):</p>
+                <CodeText>
+                  <p>cd challenge-0-simple-nft yarn deploy</p>
+                </CodeText>
+                <p className="mt-4">In a third terminal window, start your 📱 frontend:</p>
+                <CodeText>
+                  <p>cd challenge-0-simple-nft yarn start</p>
+                </CodeText>
+                <p className="mt-4">
+                  📱 Open{" "}
+                  <a href="http://localhost:3000" className="text-blue-700 underline">
+                    http://localhost:3000
+                  </a>{" "}
+                  to see the app.
+                </p>
+              </Checkpoint>
+              {/* Checkpoint 1 */}
+              <Checkpoint title="Checkpoint 1: Chainlink Function Request">
+                <CodeText>
+                  <p>Use chainlink functions playground to write your request.</p>
+                </CodeText>
+              </Checkpoint>
+              {/* Checkpoint 2 */}
+              <Checkpoint title="Checkpoint 2: Chainlink Functions Contract">
+                <CodeText>
+                  <p>Write your oracle.</p>
+                </CodeText>
+              </Checkpoint>
 
-        <div className="flex-grow bg-base-300 w-full mt-16 px-8 py-12">
-          <div className="flex justify-center items-center gap-12 flex-col sm:flex-row">
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <BugAntIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Tinker with your smart contract using the{" "}
-                <Link href="/debug" passHref className="link">
-                  Debug Contracts
-                </Link>{" "}
-                tab.
-              </p>
-            </div>
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <MagnifyingGlassIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Explore your local transactions with the{" "}
-                <Link href="/blockexplorer" passHref className="link">
-                  Block Explorer
-                </Link>{" "}
-                tab.
-              </p>
+              {/* Checkpoint 3 */}
+              <Checkpoint title="Checkpoint 3: Deploy Oracle">
+                <CodeText>
+                  <p>Deploy your oracle to listen to your Chainlink function requests.</p>
+                </CodeText>
+              </Checkpoint>
+
+              {/* Checkpoint 4 */}
+              <Checkpoint title="Checkpoint 4: 🚢 Ship your frontend! 🚁">
+                <p>
+                  ✏️ Edit your frontend config in <code>packages/nextjs/scaffold.config.ts</code> to change the
+                  targetNetwork to <code>chains.sepolia</code>:
+                </p>
+
+                <CodeText>
+                  <p>chall-0-scaffold-config</p>
+                </CodeText>
+                <p className="mt-4">🚀 Deploy your NextJS App</p>
+                <CodeText>
+                  <p>yarn vercel</p>
+                </CodeText>
+                <p className="mt-4">
+                  Follow the steps to deploy to Vercel. Once you log in (email, GitHub, etc.), the default options
+                  should work. It&apos;ll give you a public URL.
+                </p>
+                <p className="mt-4">⚠️ Run the automated testing function to make sure your app passes:</p>
+                <CodeText>
+                  <p>yarn test</p>
+                </CodeText>
+              </Checkpoint>
+
+              {/* Checkpoint 5 */}
+              <Checkpoint title="Checkpoint 5: Final Testing and Submission">
+                <CodeText>
+                  <p>Perform final testing of your application and submit it.</p>
+                </CodeText>
+              </Checkpoint>
             </div>
           </div>
         </div>
