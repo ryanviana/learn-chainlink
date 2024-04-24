@@ -1,16 +1,29 @@
 import React from "react";
 import { useTheme } from "next-themes";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+// Import specific styles
+import { okaidia, solarizedlight } from "react-syntax-highlighter/dist/cjs/styles/prism";
 
-export const CodeText: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const CodeText: React.FC<{ children: string; language?: string }> = ({ children, language = "javascript" }) => {
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
 
+  // Choose the theme based on the resolvedTheme
+  const themeStyle = isDarkMode ? okaidia : solarizedlight;
+
   return (
-    <div
-      className={isDarkMode ? "bg-gray-800 text-gray-100" : "bg-gray-100 text-gray-800"}
-      style={{ padding: "16px", borderRadius: "8px", marginTop: "16px", fontFamily: "monospace" }}
+    <SyntaxHighlighter
+      language={language}
+      style={themeStyle}
+      customStyle={{
+        padding: "16px",
+        borderRadius: "8px",
+        marginTop: "16px",
+        fontFamily: "monospace",
+        background: isDarkMode ? "#2D2D2D" : "#F5F5F5",
+      }}
     >
       {children}
-    </div>
+    </SyntaxHighlighter>
   );
 };
