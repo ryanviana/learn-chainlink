@@ -16,10 +16,12 @@ const deployMultipleContracts: DeployFunction = async function (hre: HardhatRunt
   const jsSourcePath = path.join(__dirname, "../scripts/ethOracleSource.js");
   const jsSource = fs.readFileSync(jsSourcePath, { encoding: "utf8" });
 
+  const router = "";
+
   // Deploy ETHOracle
   await deploy("ETHOracle", {
     from: deployer,
-    args: [jsSource],
+    args: [jsSource, router],
     log: true,
     autoMine: true,
   });

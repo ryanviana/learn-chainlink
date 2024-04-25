@@ -42,11 +42,22 @@ const FlipTheCoin: NextPage = () => {
     setImageRotation(prediction ? "0deg" : "180deg");
   }, [prediction]);
 
-  const flipCoin = () => {
-    setFlipping(true);
-    setShowResults(false);
-    setResult(null);
-    setCountdown(60);
+  const startGuess = async () => {
+    if (!flipping) {
+      setFlipping(true);
+      setShowResults(false);
+      setResult(null);
+      setCountdown(60);
+      try {
+        await writeYourContractAsync({
+          functionName: "placeBet",
+          args: [prediction, BigInt(betAmount)],
+        });
+      } catch (e) {
+        console.error("Error placing bet:", e);
+        setFlipping(false); // Stop flipping if there's an error
+      }
+    }
   };
 
   const revealResults = () => {
@@ -87,28 +98,12 @@ const FlipTheCoin: NextPage = () => {
               />
             </div>
           )}
-          <div className="relative">
+          <div className="relative mt-4">
+            {" "}
             <Image
               src={coinImage}
               alt="Flip Coin"
               className={`cursor-pointer ${flipping ? "opacity-70" : "opacity-100"}`}
-              onClick={
-                !flipping
-                  ? async () => {
-                      try {
-                        flipCoin();
-                        await writeYourContractAsync({
-                          functionName: "placeBet",
-                          args: [prediction, BigInt(betAmount)],
-                        });
-                      } catch (e) {
-                        console.error("Error placing bet:", e);
-                      }
-                    }
-                  : () => {
-                      /* Do nothing */
-                    }
-              }
               style={{ transition: "opacity 0.5s ease, transform 0.8s", transform: `rotate(${imageRotation})` }}
               width={192} // Adjust the width as needed
               height={192} // Adjust the height as needed
@@ -124,6 +119,9 @@ const FlipTheCoin: NextPage = () => {
               </div>
             )}
           </div>
+          <button className="btn btn-primary mt-4 mb-4" onClick={startGuess}>
+            {"Start Timer"}
+          </button>
           {showResults && (
             <div className="mt-4">
               <button className="btn btn-success" onClick={revealResults}>

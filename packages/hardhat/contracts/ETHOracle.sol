@@ -12,7 +12,7 @@ contract ETHOracle is FunctionsClient, ConfirmedOwner {
 	bytes32 public s_lastRequestId;
 	bytes public s_lastResponse;
 	bytes public s_lastError;
-	address public router = 0xb83E47C2bC239B3bf370bc41e1459A34b41238D0;
+	address public router;
 
 	// Mapping from timestamps to ETH price values
 	mapping(uint256 => uint256) public timeToEthValue;
@@ -22,9 +22,11 @@ contract ETHOracle is FunctionsClient, ConfirmedOwner {
 	event Response(bytes32 indexed requestId, uint256 ethPrice, bytes err);
 
 	constructor(
-		string memory _source
-	) FunctionsClient(router) ConfirmedOwner(msg.sender) {
+		string memory _source,
+		address _router
+	) FunctionsClient(_router) ConfirmedOwner(msg.sender) {
 		source = _source;
+		router = _router;
 	}
 
 	function requestETHPrice(
