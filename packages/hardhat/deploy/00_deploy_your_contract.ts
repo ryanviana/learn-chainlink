@@ -4,11 +4,6 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import * as fs from "fs";
 import * as path from "path";
 
-/**
- * Deploys ETHOracle and FlipTheCoinContract using the deployer account.
- *
- * @param hre HardhatRuntimeEnvironment object.
- */
 const deployMultipleContracts: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
@@ -16,17 +11,17 @@ const deployMultipleContracts: DeployFunction = async function (hre: HardhatRunt
   const jsSourcePath = path.join(__dirname, "../scripts/ethOracleSource.js");
   const jsSource = fs.readFileSync(jsSourcePath, { encoding: "utf8" });
 
-  const router = "";
+  const router = "0xb83E47C2bC239B3bf370bc41e1459A34b41238D0";
 
-  // Deploy ETHOracle
   await deploy("ETHOracle", {
     from: deployer,
-    args: [jsSource, router],
+    args: [router, jsSource],
     log: true,
     autoMine: true,
   });
+
   const ethOracle = await hre.ethers.getContract<Contract>("ETHOracle", deployer);
-  console.log("ETHOracle deployed to:", ethOracle.address);
+  console.log("ETHOracle deployed to:", ethOracle.target);
 
   // Deploy FlipTheCoinContract
   await deploy("FlipTheCoin", {
@@ -36,9 +31,10 @@ const deployMultipleContracts: DeployFunction = async function (hre: HardhatRunt
     autoMine: true,
   });
   const flipTheCoinContract = await hre.ethers.getContract<Contract>("FlipTheCoin", deployer);
-  console.log("FlipTheCoin deployed to:", flipTheCoinContract.address);
+  console.log("FlipTheCoin deployed to:", flipTheCoinContract.target);
 };
 
 export default deployMultipleContracts;
 
 deployMultipleContracts.tags = ["ETHOracle", "FlipTheCoin"];
+// deployMultipleContracts.tags = ["ETHOracle"];

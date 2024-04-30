@@ -2,7 +2,9 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 interface IETHOracle {
-	function getETHPrice(uint256 timestamp) external view returns (uint256);
+	function checkEthValueAtTime(
+		uint256 timestamp
+	) external view returns (uint256 ethPrice, bool exists);
 }
 
 contract FlipTheCoin {
@@ -17,8 +19,9 @@ contract FlipTheCoin {
 	struct Bet {
 		address bettor;
 		uint256 amount;
-		bool prediction; // true for up, false for down
+		bool prediction;
 		uint256 timestamp;
+		uint256 priceAtBetTime;
 	}
 
 	mapping(bytes32 => Bet) public bets;
@@ -27,7 +30,8 @@ contract FlipTheCoin {
 		address indexed bettor,
 		uint256 amount,
 		bool prediction,
-		uint256 timestamp
+		uint256 timestamp,
+		uint256 priceAtBetTime
 	);
 	event BetResolved(bytes32 indexed betId, bool win, uint256 payout);
 
@@ -46,17 +50,29 @@ contract FlipTheCoin {
 		uint256 betAmount = _amount - fee;
 		reserve += fee;
 
+		(uint256 priceAtBetTime, bool priceExists) = oracle.checkEthValueAtTime(
+			block.timestamp
+		);
+		require(priceExists, "Price data not available at bet time");
+
 		bytes32 betId = keccak256(
 			abi.encodePacked(msg.sender, block.timestamp, _amount, _prediction)
 		);
-		bets[betId] = Bet(msg.sender, betAmount, _prediction, block.timestamp);
+		bets[betId] = Bet(
+			msg.sender,
+			betAmount,
+			_prediction,
+			block.timestamp,
+			priceAtBetTime
+		);
 
 		emit BetPlaced(
 			betId,
 			msg.sender,
 			betAmount,
 			_prediction,
-			block.timestamp
+			block.timestamp,
+			priceAtBetTime
 		);
 	}
 
@@ -67,10 +83,14 @@ contract FlipTheCoin {
 			"Only the bettor can resolve the bet"
 		);
 
-		uint256 currentPrice = oracle.getETHPrice(bet.timestamp);
-		uint256 futurePrice = oracle.getETHPrice(block.timestamp);
+		(uint256 futurePrice, bool futurePriceExists) = oracle
+			.checkEthValueAtTime(block.timestamp);
+		require(
+			futurePriceExists,
+			"Price data not available at resolution time"
+		);
 
-		bool win = (futurePrice > currentPrice) == bet.prediction;
+		bool win = (futurePrice > bet.priceAtBetTime) == bet.prediction;
 		uint256 payout = win
 			? (bet.amount * WIN_MULTIPLIER) / 100
 			: (bet.amount * LOSS_MULTIPLIER) / 100;

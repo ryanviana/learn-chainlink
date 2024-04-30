@@ -12,6 +12,11 @@ const deployedContracts = {
         {
           inputs: [
             {
+              internalType: "address",
+              name: "router",
+              type: "address",
+            },
+            {
               internalType: "string",
               name: "_source",
               type: "string",
@@ -137,6 +142,12 @@ const deployedContracts = {
             },
             {
               indexed: false,
+              internalType: "uint256",
+              name: "timestamp",
+              type: "uint256",
+            },
+            {
+              indexed: false,
               internalType: "bytes",
               name: "err",
               type: "bytes",
@@ -150,6 +161,30 @@ const deployedContracts = {
           name: "acceptOwnership",
           outputs: [],
           stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "timestamp",
+              type: "uint256",
+            },
+          ],
+          name: "checkEthValueAtTime",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "ethPrice",
+              type: "uint256",
+            },
+            {
+              internalType: "bool",
+              name: "exists",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
           type: "function",
         },
         {
@@ -183,6 +218,45 @@ const deployedContracts = {
               internalType: "address",
               name: "",
               type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "s_lastError",
+          outputs: [
+            {
+              internalType: "bytes",
+              name: "",
+              type: "bytes",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "s_lastRequestId",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "",
+              type: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "s_lastResponse",
+          outputs: [
+            {
+              internalType: "bytes",
+              name: "",
+              type: "bytes",
             },
           ],
           stateMutability: "view",
@@ -231,7 +305,7 @@ const deployedContracts = {
               type: "bytes32",
             },
           ],
-          name: "requestETHPrice",
+          name: "sendRequest",
           outputs: [
             {
               internalType: "bytes32",
@@ -243,55 +317,37 @@ const deployedContracts = {
           type: "function",
         },
         {
-          inputs: [],
-          name: "router",
-          outputs: [
-            {
-              internalType: "address",
-              name: "",
-              type: "address",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "s_lastError",
-          outputs: [
+          inputs: [
             {
               internalType: "bytes",
-              name: "",
+              name: "request",
               type: "bytes",
             },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "s_lastRequestId",
-          outputs: [
+            {
+              internalType: "uint64",
+              name: "subscriptionId",
+              type: "uint64",
+            },
+            {
+              internalType: "uint32",
+              name: "gasLimit",
+              type: "uint32",
+            },
             {
               internalType: "bytes32",
-              name: "",
+              name: "donID",
               type: "bytes32",
             },
           ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "s_lastResponse",
+          name: "sendRequestCBOR",
           outputs: [
             {
-              internalType: "bytes",
-              name: "",
-              type: "bytes",
+              internalType: "bytes32",
+              name: "requestId",
+              type: "bytes32",
             },
           ],
-          stateMutability: "view",
+          stateMutability: "nonpayable",
           type: "function",
         },
         {
@@ -392,6 +448,12 @@ const deployedContracts = {
               indexed: false,
               internalType: "uint256",
               name: "timestamp",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "priceAtBetTime",
               type: "uint256",
             },
           ],
@@ -512,6 +574,11 @@ const deployedContracts = {
               name: "timestamp",
               type: "uint256",
             },
+            {
+              internalType: "uint256",
+              name: "priceAtBetTime",
+              type: "uint256",
+            },
           ],
           stateMutability: "view",
           type: "function",
@@ -582,6 +649,405 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
+    },
+  },
+  11155111: {
+    ETHOracle: {
+      address: "0xE47CDc74E3D90812dbd4FF073D137f39c08E8aD8",
+      abi: [
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "router",
+              type: "address",
+            },
+            {
+              internalType: "string",
+              name: "_source",
+              type: "string",
+            },
+          ],
+          stateMutability: "nonpayable",
+          type: "constructor",
+        },
+        {
+          inputs: [],
+          name: "EmptyArgs",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "EmptySecrets",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "EmptySource",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "NoInlineSecrets",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "OnlyRouterCanFulfill",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "requestId",
+              type: "bytes32",
+            },
+          ],
+          name: "UnexpectedRequestID",
+          type: "error",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "from",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "to",
+              type: "address",
+            },
+          ],
+          name: "OwnershipTransferRequested",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "from",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "to",
+              type: "address",
+            },
+          ],
+          name: "OwnershipTransferred",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "bytes32",
+              name: "id",
+              type: "bytes32",
+            },
+          ],
+          name: "RequestFulfilled",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "bytes32",
+              name: "id",
+              type: "bytes32",
+            },
+          ],
+          name: "RequestSent",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "bytes32",
+              name: "requestId",
+              type: "bytes32",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "ethPrice",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "timestamp",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "bytes",
+              name: "err",
+              type: "bytes",
+            },
+          ],
+          name: "Response",
+          type: "event",
+        },
+        {
+          inputs: [],
+          name: "acceptOwnership",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "timestamp",
+              type: "uint256",
+            },
+          ],
+          name: "checkEthValueAtTime",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "ethPrice",
+              type: "uint256",
+            },
+            {
+              internalType: "bool",
+              name: "exists",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "requestId",
+              type: "bytes32",
+            },
+            {
+              internalType: "bytes",
+              name: "response",
+              type: "bytes",
+            },
+            {
+              internalType: "bytes",
+              name: "err",
+              type: "bytes",
+            },
+          ],
+          name: "handleOracleFulfillment",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "owner",
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "s_lastError",
+          outputs: [
+            {
+              internalType: "bytes",
+              name: "",
+              type: "bytes",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "s_lastRequestId",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "",
+              type: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "s_lastResponse",
+          outputs: [
+            {
+              internalType: "bytes",
+              name: "",
+              type: "bytes",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes",
+              name: "encryptedSecretsUrls",
+              type: "bytes",
+            },
+            {
+              internalType: "uint8",
+              name: "donHostedSecretsSlotID",
+              type: "uint8",
+            },
+            {
+              internalType: "uint64",
+              name: "donHostedSecretsVersion",
+              type: "uint64",
+            },
+            {
+              internalType: "string[]",
+              name: "args",
+              type: "string[]",
+            },
+            {
+              internalType: "bytes[]",
+              name: "bytesArgs",
+              type: "bytes[]",
+            },
+            {
+              internalType: "uint64",
+              name: "subscriptionId",
+              type: "uint64",
+            },
+            {
+              internalType: "uint32",
+              name: "gasLimit",
+              type: "uint32",
+            },
+            {
+              internalType: "bytes32",
+              name: "donID",
+              type: "bytes32",
+            },
+          ],
+          name: "sendRequest",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "requestId",
+              type: "bytes32",
+            },
+          ],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes",
+              name: "request",
+              type: "bytes",
+            },
+            {
+              internalType: "uint64",
+              name: "subscriptionId",
+              type: "uint64",
+            },
+            {
+              internalType: "uint32",
+              name: "gasLimit",
+              type: "uint32",
+            },
+            {
+              internalType: "bytes32",
+              name: "donID",
+              type: "bytes32",
+            },
+          ],
+          name: "sendRequestCBOR",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "requestId",
+              type: "bytes32",
+            },
+          ],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "source",
+          outputs: [
+            {
+              internalType: "string",
+              name: "",
+              type: "string",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          name: "timeToEthValue",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "to",
+              type: "address",
+            },
+          ],
+          name: "transferOwnership",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+      ],
+      inheritedFunctions: {
+        handleOracleFulfillment: "@chainlink/contracts/src/v0.8/functions/v1_0_0/FunctionsClient.sol",
+        acceptOwnership: "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol",
+        owner: "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol",
+        transferOwnership: "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol",
+      },
     },
   },
 } as const;

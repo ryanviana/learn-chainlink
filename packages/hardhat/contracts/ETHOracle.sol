@@ -12,24 +12,26 @@ contract ETHOracle is FunctionsClient, ConfirmedOwner {
 	bytes32 public s_lastRequestId;
 	bytes public s_lastResponse;
 	bytes public s_lastError;
-	address public router;
 
-	// Mapping from timestamps to ETH price values
 	mapping(uint256 => uint256) public timeToEthValue;
 
 	error UnexpectedRequestID(bytes32 requestId);
 
-	event Response(bytes32 indexed requestId, uint256 ethPrice, bytes err);
+	event Response(
+		bytes32 indexed requestId,
+		uint256 ethPrice,
+		uint256 timestamp,
+		bytes err
+	);
 
 	constructor(
-		string memory _source,
-		address _router
-	) FunctionsClient(_router) ConfirmedOwner(msg.sender) {
+		address router,
+		string memory _source
+	) FunctionsClient(router) ConfirmedOwner(msg.sender) {
 		source = _source;
-		router = _router;
 	}
 
-	function requestETHPrice(
+	function sendRequest(
 		bytes memory encryptedSecretsUrls,
 		uint8 donHostedSecretsSlotID,
 		uint64 donHostedSecretsVersion,
@@ -60,6 +62,21 @@ contract ETHOracle is FunctionsClient, ConfirmedOwner {
 		return s_lastRequestId;
 	}
 
+	function sendRequestCBOR(
+		bytes memory request,
+		uint64 subscriptionId,
+		uint32 gasLimit,
+		bytes32 donID
+	) external onlyOwner returns (bytes32 requestId) {
+		s_lastRequestId = _sendRequest(
+			request,
+			subscriptionId,
+			gasLimit,
+			donID
+		);
+		return s_lastRequestId;
+	}
+
 	function fulfillRequest(
 		bytes32 requestId,
 		bytes memory response,
@@ -71,11 +88,23 @@ contract ETHOracle is FunctionsClient, ConfirmedOwner {
 		s_lastResponse = response;
 		s_lastError = err;
 
-		uint256 ethPrice = abi.decode(response, (uint256));
+		// uint256 ethPrice = abi.decode(response, (uint256));
 
-		uint256 timestamp = block.timestamp;
+		(uint256 ethPrice, uint256 timestamp) = abi.decode(
+			response,
+			(uint256, uint256)
+		);
+
 		timeToEthValue[timestamp] = ethPrice;
 
-		emit Response(requestId, ethPrice, s_lastError);
+		emit Response(requestId, ethPrice, timestamp, s_lastError);
+	}
+
+	function checkEthValueAtTime(
+		uint256 timestamp
+	) public view returns (uint256 ethPrice, bool exists) {
+		ethPrice = timeToEthValue[timestamp];
+		exists = ethPrice != 0 || timestamp <= block.timestamp;
+		return (ethPrice, exists);
 	}
 }
