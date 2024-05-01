@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import type { NextPage } from "next";
 import { useTheme } from "next-themes";
-import { useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { parseEther } from "viem";
+import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 
 const FlipTheCoin: NextPage = () => {
   const coinImage = "https://assets.coingecko.com/coins/images/279/large/ethereum.png?1595348880";
@@ -15,11 +16,25 @@ const FlipTheCoin: NextPage = () => {
   const [countdown, setCountdown] = useState(60);
   const [result, setResult] = useState<string | null>(null);
   const [imageRotation, setImageRotation] = useState("0deg");
+  const [betIndex, setBetIndex] = useState<number | null>(null);
 
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
 
   const { writeContractAsync: writeYourContractAsync } = useScaffoldWriteContract("FlipTheCoin");
+
+  const { data: numberOfBets } = useScaffoldReadContract({
+    contractName: "FlipTheCoin",
+    functionName: "getNumberOfBets",
+    args: ["0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"],
+    watch: true,
+  });
+
+  useEffect(() => {
+    if (numberOfBets !== undefined) {
+      setBetIndex(numberOfBets > 0 ? Number(BigInt(numberOfBets) - BigInt(1)) : null);
+    }
+  }, [numberOfBets]);
 
   useEffect(() => {
     if (flipping) {
@@ -48,20 +63,37 @@ const FlipTheCoin: NextPage = () => {
       setShowResults(false);
       setResult(null);
       setCountdown(60);
+
+      const timestamp = Math.floor(Date.now() / 1000); // Current UNIX timestamp
+
       try {
+        const weiValue = parseEther(betAmount.toString());
+
         await writeYourContractAsync({
           functionName: "placeBet",
-          args: [prediction, BigInt(betAmount)],
+          args: [prediction, weiValue, BigInt(timestamp)],
+          value: weiValue,
         });
       } catch (e) {
         console.error("Error placing bet:", e);
-        setFlipping(false); // Stop flipping if there's an error
+        setFlipping(false);
       }
     }
   };
 
-  const revealResults = () => {
-    setResult(Math.random() > 0.5 ? "Win" : "Lose");
+  const resolveGuess = async () => {
+    if (betIndex !== null) {
+      const timestamp = Math.floor(Date.now() / 1000);
+      try {
+        const result = await writeYourContractAsync({
+          functionName: "resolveBet",
+          args: [BigInt(betIndex), BigInt(timestamp)],
+        });
+        console.log(result); // Process or display the result accordingly
+      } catch (e) {
+        console.error("Error resolving bet:", e);
+      }
+    }
   };
 
   return (
@@ -99,7 +131,6 @@ const FlipTheCoin: NextPage = () => {
             </div>
           )}
           <div className="relative mt-4">
-            {" "}
             <Image
               src={coinImage}
               alt="Flip Coin"
@@ -120,12 +151,12 @@ const FlipTheCoin: NextPage = () => {
             )}
           </div>
           <button className="btn btn-primary mt-4 mb-4" onClick={startGuess}>
-            {"Start Timer"}
+            Start Timer
           </button>
           {showResults && (
             <div className="mt-4">
-              <button className="btn btn-success" onClick={revealResults}>
-                Reveal Results
+              <button className="btn btn-success" onClick={resolveGuess}>
+                Resolve Bet
               </button>
               {result && (
                 <div className={`text-2xl font-bold mt-2 ${result === "Win" ? "text-green-500" : "text-red-500"}`}>

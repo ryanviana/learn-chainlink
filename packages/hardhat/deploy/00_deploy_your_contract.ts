@@ -29,8 +29,11 @@ const deployMultipleContracts: DeployFunction = async function (hre: HardhatRunt
     args: [await ethOracle.getAddress()],
     log: true,
     autoMine: true,
+    value: hre.ethers.parseEther("3").toString(),
   });
+
   const flipTheCoinContract = await hre.ethers.getContract<Contract>("FlipTheCoin", deployer);
+
   console.log("FlipTheCoin deployed to:", flipTheCoinContract.target);
 };
 

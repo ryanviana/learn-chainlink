@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     ETHOracle: {
-      address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      address: "0x0165878A594ca255338adfa4d48449f69242Eb8F",
       abi: [
         {
           inputs: [
@@ -404,7 +404,7 @@ const deployedContracts = {
       },
     },
     FlipTheCoin: {
-      address: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+      address: "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
       abi: [
         {
           inputs: [
@@ -414,7 +414,7 @@ const deployedContracts = {
               type: "address",
             },
           ],
-          stateMutability: "nonpayable",
+          stateMutability: "payable",
           type: "constructor",
         },
         {
@@ -422,15 +422,15 @@ const deployedContracts = {
           inputs: [
             {
               indexed: true,
-              internalType: "bytes32",
-              name: "betId",
-              type: "bytes32",
-            },
-            {
-              indexed: true,
               internalType: "address",
               name: "bettor",
               type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "uint256",
+              name: "betIndex",
+              type: "uint256",
             },
             {
               indexed: false,
@@ -465,9 +465,15 @@ const deployedContracts = {
           inputs: [
             {
               indexed: true,
-              internalType: "bytes32",
-              name: "betId",
-              type: "bytes32",
+              internalType: "address",
+              name: "bettor",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "uint256",
+              name: "betIndex",
+              type: "uint256",
             },
             {
               indexed: false,
@@ -538,27 +544,20 @@ const deployedContracts = {
           type: "function",
         },
         {
-          inputs: [],
-          name: "addFunds",
-          outputs: [],
-          stateMutability: "payable",
-          type: "function",
-        },
-        {
           inputs: [
             {
-              internalType: "bytes32",
-              name: "",
-              type: "bytes32",
-            },
-          ],
-          name: "bets",
-          outputs: [
-            {
               internalType: "address",
-              name: "bettor",
+              name: "",
               type: "address",
             },
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          name: "betsByAddress",
+          outputs: [
             {
               internalType: "uint256",
               name: "amount",
@@ -577,6 +576,25 @@ const deployedContracts = {
             {
               internalType: "uint256",
               name: "priceAtBetTime",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "bettor",
+              type: "address",
+            },
+          ],
+          name: "getNumberOfBets",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
               type: "uint256",
             },
           ],
@@ -608,6 +626,11 @@ const deployedContracts = {
               name: "_amount",
               type: "uint256",
             },
+            {
+              internalType: "uint256",
+              name: "_timestamp",
+              type: "uint256",
+            },
           ],
           name: "placeBet",
           outputs: [],
@@ -630,19 +653,17 @@ const deployedContracts = {
         {
           inputs: [
             {
-              internalType: "bytes32",
-              name: "_betId",
-              type: "bytes32",
+              internalType: "uint256",
+              name: "_betIndex",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "_timestamp",
+              type: "uint256",
             },
           ],
           name: "resolveBet",
-          outputs: [],
-          stateMutability: "nonpayable",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "withdrawFunds",
           outputs: [],
           stateMutability: "nonpayable",
           type: "function",

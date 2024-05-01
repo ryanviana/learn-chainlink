@@ -17,29 +17,44 @@ contract FlipTheCoin {
 	uint256 public reserve = 0;
 
 	struct Bet {
-		address bettor;
 		uint256 amount;
 		bool prediction;
 		uint256 timestamp;
 		uint256 priceAtBetTime;
 	}
 
-	mapping(bytes32 => Bet) public bets;
+	mapping(address => Bet[]) public betsByAddress;
+
 	event BetPlaced(
-		bytes32 indexed betId,
 		address indexed bettor,
+		uint256 indexed betIndex,
 		uint256 amount,
 		bool prediction,
 		uint256 timestamp,
 		uint256 priceAtBetTime
 	);
-	event BetResolved(bytes32 indexed betId, bool win, uint256 payout);
 
-	constructor(address oracleAddress) {
+	event BetResolved(
+		address indexed bettor,
+		uint256 indexed betIndex,
+		bool win,
+		uint256 payout
+	);
+
+	constructor(address oracleAddress) payable {
 		oracle = IETHOracle(oracleAddress);
+		reserve += msg.value;
 	}
 
-	function placeBet(bool _prediction, uint256 _amount) public payable {
+	function getNumberOfBets(address bettor) public view returns (uint) {
+		return betsByAddress[bettor].length;
+	}
+
+	function placeBet(
+		bool _prediction,
+		uint256 _amount,
+		uint256 _timestamp
+	) public payable {
 		require(msg.value == _amount, "Incorrect value sent");
 		require(
 			_amount <= (reserve * MAX_BET_PERCENTAGE) / 100,
@@ -51,40 +66,33 @@ contract FlipTheCoin {
 		reserve += fee;
 
 		(uint256 priceAtBetTime, bool priceExists) = oracle.checkEthValueAtTime(
-			block.timestamp
+			_timestamp
 		);
 		require(priceExists, "Price data not available at bet time");
 
-		bytes32 betId = keccak256(
-			abi.encodePacked(msg.sender, block.timestamp, _amount, _prediction)
-		);
-		bets[betId] = Bet(
-			msg.sender,
-			betAmount,
-			_prediction,
-			block.timestamp,
-			priceAtBetTime
+		betsByAddress[msg.sender].push(
+			Bet(betAmount, _prediction, _timestamp, priceAtBetTime)
 		);
 
 		emit BetPlaced(
-			betId,
 			msg.sender,
+			betsByAddress[msg.sender].length - 1,
 			betAmount,
 			_prediction,
-			block.timestamp,
+			_timestamp,
 			priceAtBetTime
 		);
 	}
 
-	function resolveBet(bytes32 _betId) public {
-		Bet storage bet = bets[_betId];
+	function resolveBet(uint256 _betIndex, uint256 _timestamp) public {
 		require(
-			msg.sender == bet.bettor,
-			"Only the bettor can resolve the bet"
+			_betIndex < betsByAddress[msg.sender].length,
+			"Bet index out of range"
 		);
 
+		Bet storage bet = betsByAddress[msg.sender][_betIndex];
 		(uint256 futurePrice, bool futurePriceExists) = oracle
-			.checkEthValueAtTime(block.timestamp);
+			.checkEthValueAtTime(_timestamp);
 		require(
 			futurePriceExists,
 			"Price data not available at resolution time"
@@ -95,22 +103,12 @@ contract FlipTheCoin {
 			? (bet.amount * WIN_MULTIPLIER) / 100
 			: (bet.amount * LOSS_MULTIPLIER) / 100;
 
-		payable(bet.bettor).transfer(payout);
+		payable(msg.sender).transfer(payout);
 		reserve -= payout;
 
-		emit BetResolved(_betId, win, payout);
+		emit BetResolved(msg.sender, _betIndex, win, payout);
 
-		// Clean up the bet
-		delete bets[_betId];
-	}
-
-	function addFunds() public payable {
-		reserve += msg.value;
-	}
-
-	function withdrawFunds() public {
-		require(msg.sender == address(this));
-		payable(msg.sender).transfer(reserve);
-		reserve = 0;
+		// Optionally clean up the bet to prevent re-resolution
+		delete betsByAddress[msg.sender][_betIndex];
 	}
 }
