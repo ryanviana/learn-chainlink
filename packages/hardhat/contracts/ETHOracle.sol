@@ -13,14 +13,22 @@ contract ETHOracle is FunctionsClient, ConfirmedOwner {
 	bytes public s_lastResponse;
 	bytes public s_lastError;
 
-	mapping(uint256 => uint256) public timeToEthValue;
+	// Optimized mapping to store price comparison between two timestamps
+	struct PriceData {
+		bool priceIncreased;
+		bool isSet;
+	}
+
+	mapping(uint256 => mapping(uint256 => PriceData))
+		public priceIncreasedBetweenTimestamps;
 
 	error UnexpectedRequestID(bytes32 requestId);
 
 	event Response(
 		bytes32 indexed requestId,
-		uint256 ethPrice,
-		uint256 timestamp,
+		bool priceIncreased,
+		uint256 previousTimestamp,
+		uint256 currentTimestamp,
 		bytes err
 	);
 
@@ -40,7 +48,7 @@ contract ETHOracle is FunctionsClient, ConfirmedOwner {
 		uint64 subscriptionId,
 		uint32 gasLimit,
 		bytes32 donID
-	) external onlyOwner returns (bytes32 requestId) {
+	) external returns (bytes32 requestId) {
 		FunctionsRequest.Request memory req;
 		req.initializeRequestForInlineJavaScript(source);
 		if (encryptedSecretsUrls.length > 0)
@@ -67,7 +75,7 @@ contract ETHOracle is FunctionsClient, ConfirmedOwner {
 		uint64 subscriptionId,
 		uint32 gasLimit,
 		bytes32 donID
-	) external onlyOwner returns (bytes32 requestId) {
+	) external returns (bytes32 requestId) {
 		s_lastRequestId = _sendRequest(
 			request,
 			subscriptionId,
@@ -85,26 +93,36 @@ contract ETHOracle is FunctionsClient, ConfirmedOwner {
 		if (s_lastRequestId != requestId) {
 			revert UnexpectedRequestID(requestId);
 		}
+
 		s_lastResponse = response;
 		s_lastError = err;
 
-		// uint256 ethPrice = abi.decode(response, (uint256));
+		(
+			bool priceIncreased,
+			uint256 previousTimestamp,
+			uint256 currentTimestamp
+		) = abi.decode(response, (bool, uint256, uint256));
 
-		(uint256 ethPrice, uint256 timestamp) = abi.decode(
-			response,
-			(uint256, uint256)
+		priceIncreasedBetweenTimestamps[previousTimestamp][
+			currentTimestamp
+		] = PriceData(priceIncreased, true);
+
+		emit Response(
+			requestId,
+			priceIncreased,
+			previousTimestamp,
+			currentTimestamp,
+			err
 		);
-
-		timeToEthValue[timestamp] = ethPrice;
-
-		emit Response(requestId, ethPrice, timestamp, s_lastError);
 	}
 
-	function checkEthValueAtTime(
-		uint256 timestamp
-	) public view returns (uint256 ethPrice, bool exists) {
-		ethPrice = timeToEthValue[timestamp];
-		exists = ethPrice != 0 || timestamp <= block.timestamp;
-		return (ethPrice, exists);
+	function didPriceIncrease(
+		uint256 fromTimestamp,
+		uint256 toTimestamp
+	) public view returns (bool priceIncreased, bool isSet) {
+		PriceData memory data = priceIncreasedBetweenTimestamps[fromTimestamp][
+			toTimestamp
+		];
+		return (data.priceIncreased, data.isSet);
 	}
 }

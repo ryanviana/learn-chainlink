@@ -6,14 +6,15 @@ const { ethers } = require("hardhat");
 const contractABI = require("../artifacts/contracts/ETHOracle.sol/ETHOracle.json").abi;
 
 // Replace 'your_deployed_contract_address' with your contract's deployed address
-const contractAddress = "0xE47CDc74E3D90812dbd4FF073D137f39c08E8aD8";
-const timestamp = "1714424788";
+const contractAddress = "0x77E1Bb33d34392b3C0dB5dFFDbADceED752aFC3b";
+const fromTimestamp = "1714711671";
+const toTimestamp = "1715711671";
 
 // Parameters for sendRequest - adjust these values based on your specific needs
 const encryptedSecretsUrls = "0x";
 const donHostedSecretsSlotID = 0;
 const donHostedSecretsVersion = 0;
-const args = [timestamp];
+const args = [fromTimestamp, toTimestamp];
 const bytesArgs = [];
 const subscriptionId = 2197;
 const gasLimit = 300000;

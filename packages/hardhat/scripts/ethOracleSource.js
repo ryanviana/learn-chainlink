@@ -1,27 +1,28 @@
 const ethers = await import("npm:ethers@6.10.0");
 
-const timestamp = args[0];
+const fromTimestamp = args[0];
+const toTimestamp = args[1];
 
-const URL = `https://min-api.cryptocompare.com/data/pricehistorical?fsym=ETH&tsyms=USD&ts=` + timestamp;
+const URL_PREVIOUS = `https://min-api.cryptocompare.com/data/pricehistorical?fsym=ETH&tsyms=USD&ts=` + fromTimestamp;
 
-const apiResponse = await Functions.makeHttpRequest({
-  url: URL,
+const URL_CURRENT = `https://min-api.cryptocompare.com/data/pricehistorical?fsym=ETH&tsyms=USD&ts=` + toTimestamp;
+
+const apiResponsePrevious = await Functions.makeHttpRequest({
+  url: URL_PREVIOUS,
+});
+const apiResponseCurrent = await Functions.makeHttpRequest({
+  url: URL_CURRENT,
 });
 
-if (apiResponse.error) {
-  console.error(apiResponse.error);
-  throw Error("Request failed");
-}
+const dataPrevious = apiResponsePrevious.data;
+const dataCurrent = apiResponseCurrent.data;
 
-const data = apiResponse.data;
+const previousEthPrice = Math.round(dataPrevious.ETH.USD * 10 ** 4);
+const currentEthPrice = Math.round(dataCurrent.ETH.USD * 10 ** 4);
 
-if (!data || data.ETH.USD === undefined) {
-  console.error("ETH price data is missing from the response");
-  throw Error("Invalid response data");
-}
-
-const ethPrice = Math.round(data.ETH.USD * 10 ** 4);
-
-const encoded = ethers.AbiCoder.defaultAbiCoder().encode(["uint256", "uint256"], [ethPrice, timestamp]);
+const encoded = ethers.AbiCoder.defaultAbiCoder().encode(
+  ["bool", "uint256", "uint256"],
+  [currentEthPrice > previousEthPrice, fromTimestamp, toTimestamp],
+);
 
 return ethers.getBytes(encoded);
