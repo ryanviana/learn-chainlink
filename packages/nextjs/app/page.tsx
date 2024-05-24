@@ -38,8 +38,8 @@ const Home: React.FC = () => {
             <section id="introduction">
               <h2 className="text-3xl font-semibold">🚀 Introduction</h2>
               <p>
-                Welcome to the Flip The Coin Crypto Challenge! In this challenge, you&apos;ll build a game that predicts
-                whether the price of Ethereum will go up or down in the next minute using Chainlink.
+                Welcome to the Flip The Coin Crypto Challenge! In this challenge, you'll build a game that predicts
+                whether the price of Ethereum will go up or down in the next minute using Chainlink Functions.
               </p>
             </section>
 
@@ -48,23 +48,44 @@ const Home: React.FC = () => {
               <h2 className="text-xl font-bold mt-4">Initial Setup</h2>
               <p>Start by installing the necessary tools to work on the Chainlink challenge:</p>
               <ul className="list-disc list-inside space-y-2">
-                <li>Node.js (version &gt;= 18.17)</li>
-                <li>Yarn (version 1 or newer)</li>
-                <li>Git</li>
+                <li>Node.js (version &gt;= 18.17): Node.js is a JavaScript runtime used to run server-side code.</li>
+                <li>Yarn (version 1 or newer): Yarn is a package manager that helps manage project dependencies.</li>
+                <li>Git: Git is a version control system for tracking changes in your code.</li>
               </ul>
 
               <h2 className="text-xl font-bold mt-4">Repository Setup</h2>
               <p>Clone the challenge repository and prepare your development environment:</p>
               <CodeText>
-                {`git clone https://github.com/scaffold-eth/se-2-challenges.git challenge-0-simple-nft
-cd challenge-0-simple-nft
-git checkout challenge-0-simple-nft
+                {`git clone https://github.com/ryanviana/learn-chainlink.git 
+cd learn-chainlink
+git checkout flip-the-coin-challenge
 yarn install
 yarn chain`}
               </CodeText>
 
+              <p>This command sequence does the following:</p>
+              <ul className="list-disc list-inside space-y-2">
+                <li>
+                  <code>git clone</code> - clones the repository to your local machine.
+                </li>
+                <li>
+                  <code>cd challenge-0-simple-nft</code> - navigates into the project directory.
+                </li>
+                <li>
+                  <code>git checkout challenge-0-simple-nft</code> - switches to the specified challenge branch.
+                </li>
+                <li>
+                  <code>yarn install</code> - installs the project dependencies.
+                </li>
+                <li>
+                  <code>yarn chain</code> - starts a local blockchain instance using Hardhat.
+                </li>
+              </ul>
+
               <p>Deploy your contracts locally:</p>
               <CodeText>{`yarn deploy`}</CodeText>
+
+              <p>This command deploys the smart contracts to your local blockchain.</p>
 
               <p>Start the local development server to run the frontend:</p>
               <CodeText>{`yarn start`}</CodeText>
@@ -78,7 +99,11 @@ yarn chain`}
               </p>
 
               <h2 className="text-xl font-bold mt-4">Chainlink Configuration</h2>
-              <p>To fully participate in this challenge, ensure your setup on the Sepolia test network:</p>
+              <p>
+                Since we are using Chainlink Functions, all tests will be conducted on the Sepolia test network instead
+                of a local blockchain like Hardhat. To fully participate in this challenge, ensure your setup on the
+                Sepolia test network:
+              </p>
               <ul className="list-disc list-inside space-y-2">
                 <li>
                   Request testnet ETH and Link Tokens via the{" "}
@@ -93,6 +118,16 @@ yarn chain`}
                     link
                   </a>
                   .
+                </li>
+                <li>
+                  Update the <code>target network</code> in your ScaffoldETH configuration to point to Sepolia:
+                  <p className="mt-4"></p>
+                  <CodeText>
+                    {`// packages/nextjs/scaffold.config.ts
+module.exports = {
+  targetNetwork: 'chains.sepolia'
+}`}
+                  </CodeText>
                 </li>
               </ul>
 
@@ -133,44 +168,37 @@ yarn chain`}
                 fetch the ETH price:
               </p>
               <CodeText>
-                {`const apiResponse = await Functions.makeHttpRequest({
-url: 'https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD'
+                {`
+const fromTimestamp = args[0];
+const toTimestamp = args[1];
+const URL_PREVIOUS = \`https://min-api.cryptocompare.com/data/pricehistorical?fsym=ETH&tsyms=USD&ts=\` + fromTimestamp;
+const URL_CURRENT = \`https://min-api.cryptocompare.com/data/pricehistorical?fsym=ETH&tsyms=USD&ts=\` + toTimestamp;
+const apiResponsePrevious = await Functions.makeHttpRequest({
+  url: URL_PREVIOUS,
 });
-
-if (apiResponse.error) {
-console.error(apiResponse.error);
-throw new Error('Request failed');
-}
-
-const data = apiResponse.data;
-
-if (!data || data.USD === undefined) {
-console.error('ETH price data is missing from the response');
-throw new Error('Invalid response data');
-}
-
-const ethPrice = Math.round(data.USD * 10 ** 18);
-
-return Functions.encodeUint256(ethPrice);`}
+const apiResponseCurrent = await Functions.makeHttpRequest({
+  url: URL_CURRENT,
+});
+const dataPrevious = apiResponsePrevious.data;
+const dataCurrent = apiResponseCurrent.data;
+const previousEthPrice = Math.round(dataPrevious.ETH.USD * 10 ** 4);
+const currentEthPrice = Math.round(dataCurrent.ETH.USD * 10 ** 4);
+console.log(currentEthPrice, previousEthPrice, currentEthPrice>previousEthPrice);
+return Functions.encodeUint256(Number(currentEthPrice>previousEthPrice));`}
               </CodeText>
 
               <p className="mt-4">
-                Examine the response you receive. It should include the current price of ETH. Understanding how to
-                retrieve and handle this data is crucial for the logic of our game.
+                Examine the response you receive. It should include the previous and current price of ETH. Understanding
+                how to retrieve and handle this data is crucial for the logic of our game.
+              </p>
+              <p className="mt-4">
+                To run the code locally, we must do some adaptations. Check out the code in{" "}
+                <code>ethOracleSource.js</code> located in the <code>scripts</code> folder.
               </p>
               <p className="mt-4">
                 Once you’re comfortable with the API call, you’re ready to integrate this functionality into our game in
                 the upcoming checkpoints.
               </p>
-              <blockquote className="border-l-4 border-blue-500 italic mt-6 my-4 pl-4 md:pl-8">
-                Make sure to have our output set to <code>uint256</code> at the playground.
-              </blockquote>
-              <Image
-                src={playgroundImage}
-                alt="Chainlink Challenge Banner"
-                layout="responsive"
-                className="w-full max-w-md"
-              />
             </Checkpoint>
 
             {/* Checkpoint 2: Building the Oracle Contract */}
@@ -181,8 +209,9 @@ return Functions.encodeUint256(ethPrice);`}
                 real-time Ethereum price data retrieved by Chainlink.
               </p>
               <p className="mt-4">
-                You&apos;ll focus on implementing the <code>fulfill</code> function in the smart contract. This function
-                is critical, as Chainlink will automatically call it to pass the data once the API request is completed.
+                You&apos;ll focus on implementing the <code>fulfillRequest</code> function in the smart contract. This
+                function is critical, as Chainlink will automatically call it to pass the data once the API request is
+                completed.
               </p>
 
               <p className="mt-4">
@@ -192,91 +221,155 @@ return Functions.encodeUint256(ethPrice);`}
               </p>
               <CodeText>
                 {`function fulfillRequest(
-bytes32 requestId,
-bytes memory response,
-bytes memory err
+    bytes32 requestId,
+    bytes memory response,
+    bytes memory err
 ) internal override {
-if (s_lastRequestId != requestId) {
-revert UnexpectedRequestID(requestId);
-}
-s_lastResponse = response;
-s_lastError = err;
+    if (s_lastRequestId != requestId) {
+        revert UnexpectedRequestID(requestId);
+    }
 
-uint256 ethPrice = abi.decode(response, (uint256));
-uint256 timestamp = block.timestamp;
-timeToEthValue[timestamp] = ethPrice;
+    s_lastResponse = response;
+    s_lastError = err;
 
-emit Response(requestId, ethPrice, s_lastError);
+    (
+        bool priceIncreased,
+        uint256 previousTimestamp,
+        uint256 currentTimestamp
+    ) = abi.decode(response, (bool, uint256, uint256));
+
+    priceIncreasedBetweenTimestamps[previousTimestamp][
+        currentTimestamp
+    ] = PriceData(priceIncreased, true);
+
+    emit Response(
+        requestId,
+        priceIncreased,
+        previousTimestamp,
+        currentTimestamp,
+        err
+    );
 }`}
               </CodeText>
 
               <p className="mt-4">
-                <strong>
-                  Key components of the <code>fulfillRequest</code> function:
-                </strong>
+                Let&apos;s break down this function step-by-step to understand what each part does:
+              </p>
+
+              <h3 className="text-2xl font-semibold">Function Signature</h3>
+              <p>
+                The function signature is:
+                <code>
+                  function fulfillRequest(bytes32 requestId, bytes memory response, bytes memory err) internal override
+                </code>
+                . It takes three parameters:
               </p>
               <ul className="list-disc list-inside space-y-2">
                 <li>
-                  <strong>requestId:</strong> The unique identifier of the data request, ensuring the correct response
-                  is processed.
+                  <strong>requestId</strong>: A unique identifier for the data request. This ensures that the response
+                  corresponds to the correct request.
                 </li>
                 <li>
-                  <strong>response:</strong> The raw Ethereum price data returned by the API, stored in{" "}
-                  <code>s_lastResponse</code>.
+                  <strong>response</strong>: The raw Ethereum price data returned by the API. This data is encoded and
+                  needs to be decoded to be useful.
                 </li>
                 <li>
-                  <strong>err:</strong> Any error message returned by the API, stored in <code>s_lastError</code>.
+                  <strong>err</strong>: Any error message returned by the API. This helps in debugging and understanding
+                  if something went wrong.
                 </li>
               </ul>
-              <p className="mt-4">
-                This function uses the <code>internal override</code> modifier, specifying that it&apos;s an internal
-                version to be called by the contract, and it overrides a base contract function.
+
+              <h3 className="text-2xl font-semibold">Check Request ID</h3>
+              <p>
+                The first line inside the function checks if the <code>requestId</code> matches the last request ID
+                stored in <code>s_lastRequestId</code>. This ensures that the response being processed is for the
+                correct request:
+              </p>
+              <CodeText>{`if (s_lastRequestId != requestId) {
+    revert UnexpectedRequestID(requestId);
+}`}</CodeText>
+              <p>
+                If the IDs do not match, it reverts the transaction with an error <code>UnexpectedRequestID</code>. This
+                is an important security check to prevent processing incorrect data.
               </p>
 
-              <p className="mt-4">
-                <strong>Before deploying your contract:</strong>
+              <h3 className="text-2xl font-semibold">Store the Response and Error</h3>
+              <p>
+                The function then stores the response and any error in the state variables <code>s_lastResponse</code>{" "}
+                and <code>s_lastError</code> respectively:
               </p>
-              <ol className="list-decimal list-inside space-y-2">
-                You&apos;ll need to copy and paste the eth price request we used in the playground at the{" "}
-                <code>packages/hardhat/scripts/ethOracleSource.js</code> file, that is in the folder{" "}
-                <code>scripts</code>.
-              </ol>
+              <CodeText>{`s_lastResponse = response;
+s_lastError = err;`}</CodeText>
+              <p>This allows the contract to keep track of the latest data received and any associated errors.</p>
+
+              <h3 className="text-2xl font-semibold">Decode the Response</h3>
+              <p>
+                The next step is to decode the response data. The response contains whether the price increased, the
+                previous timestamp, and the current timestamp:
+              </p>
+              <CodeText>{`(
+    bool priceIncreased,
+    uint256 previousTimestamp,
+    uint256 currentTimestamp
+) = abi.decode(response, (bool, uint256, uint256));`}</CodeText>
+              <p>
+                The <code>abi.decode</code> function is used to decode the response from bytes into the respective
+                types. Here, it decodes into a boolean indicating if the price increased, and two timestamps.
+              </p>
+
+              <h3 className="text-2xl font-semibold">Store Price Data</h3>
+              <p>
+                The decoded data is then stored in a mapping <code>priceIncreasedBetweenTimestamps</code>:
+              </p>
+              <CodeText>{`priceIncreasedBetweenTimestamps[previousTimestamp][
+    currentTimestamp
+] = PriceData(priceIncreased, true);`}</CodeText>
+              <p>
+                This mapping keeps track of whether the price increased between two specific timestamps. The{" "}
+                <code>PriceData</code> struct is used to store this information.
+              </p>
+
+              <h3 className="text-2xl font-semibold">Emit Event</h3>
+              <p>
+                Finally, the function emits a <code>Response</code> event with all the relevant data:
+              </p>
+              <CodeText>{`emit Response(
+    requestId,
+    priceIncreased,
+    previousTimestamp,
+    currentTimestamp,
+    err
+);`}</CodeText>
+              <p>
+                Emitting events is a way to log information on the blockchain. This event can be listened to by
+                off-chain applications to know when the data has been processed and is available.
+              </p>
+
+              <h3 className="text-2xl font-semibold">Summary</h3>
+              <p>
+                The <code>fulfillRequest</code> function is essential for processing the API response. It ensures that
+                the response is for the correct request, stores the response and any errors, decodes the data, updates
+                the contract's state, and emits an event with the processed data.
+              </p>
             </Checkpoint>
 
             {/* Checkpoint 3: Deploy Your Contract */}
-            <Checkpoint title="Checkpoint 3: 💾 Deploy your contract! 🛰">
+            <Checkpoint title="Checkpoint 3: 💾 Deploy Your Contract! 🛰">
               <p>
-                🚀 Ready to launch your smart contract into the public testnet? Follow these steps to deploy to Sepolia.
+                🚀 Ready to launch your smart contract onto the public testnet? Follow these steps to deploy to Sepolia:
               </p>
               <p className="mt-4">
-                <strong>1. Set the Network:</strong> Update the <code>defaultNetwork</code> in your Hardhat
-                configuration to point to Sepolia.
-              </p>
-              <CodeText>
-                {`// hardhat.config.ts
-module.exports = {
-  defaultNetwork: 'sepolia',
-  networks: {
-    hardhat: {},
-    sepolia: {
-      url: 'https://sepolia.infura.io/v3/YOUR_INFURA_PROJECT_ID',
-      accounts: ['YOUR_PRIVATE_KEY']
-    }
-  }
-}`}
-              </CodeText>
-              <p className="mt-4">
-                <strong>2. Generate a Deployer Address:</strong> Use Yarn to generate a new deployer address. This
+                <strong>1. Generate a Deployer Address:</strong> Use Yarn to generate a new deployer address. This
                 command creates a unique deployer address and saves the mnemonic locally, avoiding the need to use your
                 personal private key.
               </p>
               <CodeText>{"yarn generate"}</CodeText>
               <p className="mt-4">
-                <strong>3. Check Your Account:</strong> Confirm the balance of your new deployer account with:
+                <strong>2. Check Your Account:</strong> Confirm the balance of your new deployer account with:
               </p>
               <CodeText>{"yarn account"}</CodeText>
               <p className="mt-4">
-                <strong>4. Fund Your Account:</strong> Ensure your deployer address has enough ETH for deployment.
+                <strong>3. Fund Your Account:</strong> Ensure your deployer address has enough ETH for deployment.
                 Obtain ETH from:
                 <ul className="list-disc list-inside space-y-2">
                   <li>
@@ -292,7 +385,7 @@ module.exports = {
                 </ul>
               </p>
               <p className="mt-4">
-                <strong>5. Deploy Your Contract:</strong> Deploy your NFT smart contract to Sepolia using the following
+                <strong>4. Deploy Your Contract:</strong> Deploy your smart contract to Sepolia using the following
                 command:
               </p>
               <CodeText>{"yarn deploy --network sepolia"}</CodeText>
@@ -309,10 +402,24 @@ module.exports = {
                 on your phone loaded with testnet ETH can be a handy trick during development. 🧙‍♂️ You&apos;ll look like
                 a wizard when you can fund your deployer address from your phone in seconds.
               </blockquote>
+
+              <p className="mt-4">
+                <strong>5. Add a Consumer to Your Subscription:</strong> After you fund your subscription, add your
+                consumer to it. Specify the address for the consumer contract that you deployed earlier and click{" "}
+                <strong>Add consumer</strong>. MetaMask prompts you to confirm the transaction.
+              </p>
+              <p>
+                Subscription creation and configuration is complete. You can always see the details of your subscription
+                again at{" "}
+                <a href="https://functions.chain.link" className="text-blue-700 underline">
+                  functions.chain.link
+                </a>
+                .
+              </p>
             </Checkpoint>
 
             {/* Checkpoint 4: Ship Your Frontend */}
-            <Checkpoint title="Checkpoint 4: 🚢 Ship your frontend! 🚁">
+            <Checkpoint title="Checkpoint 4: 🚢 Ship Your Frontend! 🚁">
               <p>
                 Now that your smart contract is live on the Sepolia testnet, it’s time to prepare and deploy your
                 frontend to interact with it.
@@ -384,10 +491,10 @@ useScaffoldEventHistory({ fromBlock: 3750241n }) // Replace 3750241n with the bl
               </p>
               <ul className="list-disc list-inside space-y-2">
                 <li>
-                  ALCHEMY_API_KEY in <code>.env</code> files within the Hardhat and Next.js packages.
+                  Add your ALCHEMY_API_KEY in <code>.env</code> files within the Hardhat and Next.js packages.
                 </li>
                 <li>
-                  ETHERSCAN_API_KEY in the Hardhat package&apos;s <code>.env</code> file.
+                  Add your ETHERSCAN_API_KEY in the Hardhat package&apos;s <code>.env</code> file.
                 </li>
               </ul>
 
