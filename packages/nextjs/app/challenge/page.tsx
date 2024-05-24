@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import type { NextPage } from "next";
 import { useTheme } from "next-themes";
@@ -10,7 +10,7 @@ import { PriceCard } from "~~/components/learn-chainlink/PriceCard";
 import { EtherInput } from "~~/components/scaffold-eth";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { notification } from "~~/utils/scaffold-eth";
-import { fetchPriceFromUniswap } from "~~/utils/scaffold-eth";
+import { fetchEthUsdPrices } from "~~/utils/scaffold-eth";
 
 const FlipTheCoin: NextPage = () => {
   const coinImage = "https://assets.coingecko.com/coins/images/279/large/ethereum.png?1595348880";
@@ -128,19 +128,16 @@ const FlipTheCoin: NextPage = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchPrices = async () => {
-      const currentPrice = await fetchPriceFromUniswap(mainnet);
-      setCurrentPrice(currentPrice);
+  const fetchPrices = useCallback(async () => {
+    const { currentPrice, pastPrice } = await fetchEthUsdPrices();
 
-      setTimeout(async () => {
-        const pastPrice = await fetchPriceFromUniswap(mainnet);
-        setPastPrice(pastPrice);
-      }, 60000);
-    };
-
-    fetchPrices();
+    setCurrentPrice(currentPrice);
+    setPastPrice(pastPrice);
   }, []);
+
+  useEffect(() => {
+    fetchPrices();
+  }, [fetchPrices]);
 
   return (
     <div
@@ -220,7 +217,7 @@ const FlipTheCoin: NextPage = () => {
               )}
             </div>
           </div>
-          <PriceCard currentPrice={currentPrice} pastPrice={pastPrice} />
+          <PriceCard currentPrice={currentPrice} pastPrice={pastPrice} onReload={fetchPrices} />
         </div>
       </div>
     </div>

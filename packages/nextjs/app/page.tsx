@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import Image from "next/image";
 import bannerImage from "~~/components/assets/flip_the_coin.webp";
@@ -9,6 +9,16 @@ import { CodeText } from "~~/components/learn-chainlink/CodeText";
 import playgroundImage from "~~/public/output-chainlin-playground.png";
 
 const Home: React.FC = () => {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return null;
+  }
+
   return (
     <>
       <Head>

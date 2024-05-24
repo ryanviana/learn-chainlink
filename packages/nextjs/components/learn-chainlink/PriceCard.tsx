@@ -1,6 +1,14 @@
 import Image from "next/image";
 
-export const PriceCard = ({ currentPrice, pastPrice }: { currentPrice: number | null; pastPrice: number | null }) => {
+export const PriceCard = ({
+  currentPrice,
+  pastPrice,
+  onReload,
+}: {
+  currentPrice: number | null;
+  pastPrice: number | null;
+  onReload: () => void;
+}) => {
   const priceChange = currentPrice !== null && pastPrice !== null ? currentPrice - pastPrice : null;
   const priceChangeClass = priceChange !== null && priceChange > 0 ? "text-green-500" : "text-red-500";
 
@@ -22,6 +30,9 @@ export const PriceCard = ({ currentPrice, pastPrice }: { currentPrice: number | 
             {priceChange > 0 ? "▲" : "▼"} ${Math.abs(priceChange).toFixed(2)}
           </div>
         )}
+        <button className="btn btn-primary mt-4" onClick={onReload}>
+          Reload
+        </button>
       </div>
     </div>
   );
