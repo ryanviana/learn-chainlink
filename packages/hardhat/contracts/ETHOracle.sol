@@ -90,30 +90,9 @@ contract ETHOracle is FunctionsClient, ConfirmedOwner {
 		bytes memory response,
 		bytes memory err
 	) internal override {
-		if (s_lastRequestId != requestId) {
-			revert UnexpectedRequestID(requestId);
-		}
-
-		s_lastResponse = response;
-		s_lastError = err;
-
-		(
-			bool priceIncreased,
-			uint256 previousTimestamp,
-			uint256 currentTimestamp
-		) = abi.decode(response, (bool, uint256, uint256));
-
-		priceIncreasedBetweenTimestamps[previousTimestamp][
-			currentTimestamp
-		] = PriceData(priceIncreased, true);
-
-		emit Response(
-			requestId,
-			priceIncreased,
-			previousTimestamp,
-			currentTimestamp,
-			err
-		);
+		/*
+		add the missing code here
+		 */
 	}
 
 	function didPriceIncrease(
