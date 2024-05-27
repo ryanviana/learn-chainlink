@@ -3,10 +3,12 @@
 import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import Image from "next/image";
+import addConsumerImage from "~~/components/assets/add_consumer.png";
+import playgroundImage from "~~/components/assets/chainlink_playground.png";
 import bannerImage from "~~/components/assets/flip_the_coin.webp";
+import gameScreenshot from "~~/components/assets/flip_the_coin_game.png";
 import { Checkpoint } from "~~/components/learn-chainlink/Checkpoint";
 import { CodeText } from "~~/components/learn-chainlink/CodeText";
-import playgroundImage from "~~/public/output-chainlin-playground.png";
 
 const Home: React.FC = () => {
   const [isClient, setIsClient] = useState(false);
@@ -69,10 +71,10 @@ yarn chain`}
                   <code>git clone</code> - clones the repository to your local machine.
                 </li>
                 <li>
-                  <code>cd challenge-0-simple-nft</code> - navigates into the project directory.
+                  <code>cd learn-chainlink</code> - navigates into the project directory.
                 </li>
                 <li>
-                  <code>git checkout challenge-0-simple-nft</code> - switches to the specified challenge branch.
+                  <code>git checkout flip-the-coin-challenge</code> - switches to the specified challenge branch.
                 </li>
                 <li>
                   <code>yarn install</code> - installs the project dependencies.
@@ -163,9 +165,9 @@ module.exports = {
                 . This is a powerful tool where you can experiment with various API requests without any coding setup.
               </p>
               <p className="mt-4">
-                For our game, <strong>Flip The Coin Crypto</strong>, we&apos;ll check the current price of Ethereum
-                (ETH) to decide the outcome of the game. Copy and paste the following request into the playground to
-                fetch the ETH price:
+                For our game, <strong>Flip The Coin Crypto</strong>, we'll compare the price of Ethereum (ETH) at two
+                different timestamps to decide the outcome of the game. Copy and paste the following code into the
+                playground to fetch and compare the ETH prices:
               </p>
               <CodeText>
                 {`
@@ -188,8 +190,18 @@ return Functions.encodeUint256(Number(currentEthPrice>previousEthPrice));`}
               </CodeText>
 
               <p className="mt-4">
-                Examine the response you receive. It should include the previous and current price of ETH. Understanding
-                how to retrieve and handle this data is crucial for the logic of our game.
+                Note: The arguments <code>args[0]</code> and <code>args[1]</code> must be epoch timestamps. For example,
+                you can use the following recent timestamps: <code>1685119200</code> and <code>1685122800</code>.
+              </p>
+              <Image
+                src={playgroundImage}
+                alt="Chainlink Function Playground"
+                layout="responsive"
+                className="w-full max-w-2xl mx-auto my-4"
+              />
+              <p className="mt-4">
+                Examine the response you receive. Understanding how to retrieve and handle this data is crucial for the
+                logic of our game.
               </p>
               <p className="mt-4">
                 To run the code locally, we must do some adaptations. Check out the code in{" "}
@@ -263,22 +275,23 @@ return Functions.encodeUint256(Number(currentEthPrice>previousEthPrice));`}
                   function fulfillRequest(bytes32 requestId, bytes memory response, bytes memory err) internal override
                 </code>
                 . It takes three parameters:
+                <p>
+                  <ul className="list-disc list-inside space-y-2">
+                    <li>
+                      <strong>requestId</strong>: A unique identifier for the data request. This ensures that the
+                      response corresponds to the correct request.
+                    </li>
+                    <li>
+                      <strong>response</strong>: The raw Ethereum price data returned by the API. This data is encoded
+                      and needs to be decoded to be useful.
+                    </li>
+                    <li>
+                      <strong>err</strong>: Any error message returned by the API. This helps in debugging and
+                      understanding if something went wrong.
+                    </li>
+                  </ul>
+                </p>
               </p>
-              <ul className="list-disc list-inside space-y-2">
-                <li>
-                  <strong>requestId</strong>: A unique identifier for the data request. This ensures that the response
-                  corresponds to the correct request.
-                </li>
-                <li>
-                  <strong>response</strong>: The raw Ethereum price data returned by the API. This data is encoded and
-                  needs to be decoded to be useful.
-                </li>
-                <li>
-                  <strong>err</strong>: Any error message returned by the API. This helps in debugging and understanding
-                  if something went wrong.
-                </li>
-              </ul>
-
               <h3 className="text-2xl font-semibold">Check Request ID</h3>
               <p>
                 The first line inside the function checks if the <code>requestId</code> matches the last request ID
@@ -404,22 +417,57 @@ s_lastError = err;`}</CodeText>
               </blockquote>
 
               <p className="mt-4">
-                <strong>5. Add a Consumer to Your Subscription:</strong> After you fund your subscription, add your
-                consumer to it. Specify the address for the consumer contract that you deployed earlier and click{" "}
-                <strong>Add consumer</strong>. MetaMask prompts you to confirm the transaction.
-              </p>
-              <p>
-                Subscription creation and configuration is complete. You can always see the details of your subscription
-                again at{" "}
+                <strong>5. Add a Consumer to Your Subscription:</strong> Once your subscription is funded, the next step
+                is to add a consumer. Go to{" "}
                 <a href="https://functions.chain.link" className="text-blue-700 underline">
                   functions.chain.link
                 </a>
-                .
+                , click on <strong>Add consumer</strong>. Then, enter the address of the consumer contract that you
+                deployed earlier. MetaMask will prompt you to confirm the transaction.
+              </p>
+
+              <Image
+                src={addConsumerImage}
+                alt="Add Consumer Screenshot"
+                layout="responsive"
+                className="w-3/4 max-w-xl mx-auto my-4"
+              />
+
+              <p>Your subscription creation and configuration are now complete.</p>
+            </Checkpoint>
+
+            {/* Checkpoint 4: Test the Game */}
+            <Checkpoint title="Checkpoint 4: 🎮 Test the Game">
+              <p>Before proceeding, let's test the game locally to ensure everything is set up correctly.</p>
+              <p>
+                <ol className="list-decimal list-inside space-y-2">
+                  <li>
+                    Open your browser and navigate to{" "}
+                    <a href="http://localhost:3000/challenge" className="text-blue-700 underline">
+                      http://localhost:3000/challenge
+                    </a>
+                    .
+                  </li>
+                  <li>Ensure the game interface loads correctly.</li>
+                  <li>Interact with the game by placing a bet.</li>
+                  <li>Observe the response to see if the game behaves as expected.</li>
+                </ol>
+              </p>
+              <Image
+                src={gameScreenshot}
+                alt="Flip The Coin Game Screenshot"
+                layout="responsive"
+                className="w-1/4 max-w-xs mx-auto my-4"
+              />
+              <p className="mt-4">
+                Ensure that the game interface loads correctly, and test placing a bet to see if the game responds as
+                expected. This step is crucial to confirm that your smart contracts and frontend are working together
+                seamlessly.
               </p>
             </Checkpoint>
 
-            {/* Checkpoint 4: Ship Your Frontend */}
-            <Checkpoint title="Checkpoint 4: 🚢 Ship Your Frontend! 🚁">
+            {/* Checkpoint 5: Ship Your Frontend */}
+            <Checkpoint title="Checkpoint 5: 🚢 Ship Your Frontend! 🚁">
               <p>
                 Now that your smart contract is live on the Sepolia testnet, it’s time to prepare and deploy your
                 frontend to interact with it.
