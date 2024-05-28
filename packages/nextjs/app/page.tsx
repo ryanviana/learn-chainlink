@@ -40,7 +40,7 @@ const Home: React.FC = () => {
             <section id="introduction">
               <h2 className="text-3xl font-semibold">🚀 Introduction</h2>
               <p>
-                Welcome to the Flip The Coin Crypto Challenge! In this challenge, you'll build a game that predicts
+                Welcome to the Flip The Coin Crypto Challenge! In this challenge, you&apos;ll build a game that predicts
                 whether the price of Ethereum will go up or down in the next minute using Chainlink Functions.
               </p>
             </section>
@@ -165,8 +165,8 @@ module.exports = {
                 . This is a powerful tool where you can experiment with various API requests without any coding setup.
               </p>
               <p className="mt-4">
-                For our game, <strong>Flip The Coin Crypto</strong>, we'll compare the price of Ethereum (ETH) at two
-                different timestamps to decide the outcome of the game. Copy and paste the following code into the
+                For our game, <strong>Flip The Coin Crypto</strong>, we&apos;ll compare the price of Ethereum (ETH) at
+                two different timestamps to decide the outcome of the game. Copy and paste the following code into the
                 playground to fetch and compare the ETH prices:
               </p>
               <CodeText>
@@ -362,7 +362,7 @@ s_lastError = err;`}</CodeText>
               <p>
                 The <code>fulfillRequest</code> function is essential for processing the API response. It ensures that
                 the response is for the correct request, stores the response and any errors, decodes the data, updates
-                the contract's state, and emits an event with the processed data.
+                the contract&apos;s state, and emits an event with the processed data.
               </p>
             </Checkpoint>
 
@@ -438,7 +438,7 @@ s_lastError = err;`}</CodeText>
 
             {/* Checkpoint 4: Test the Game */}
             <Checkpoint title="Checkpoint 4: 🎮 Test the Game">
-              <p>Before proceeding, let's test the game locally to ensure everything is set up correctly.</p>
+              <p>Before proceeding, let&apos;s test the game locally to ensure everything is set up correctly.</p>
               <p>
                 <ol className="list-decimal list-inside space-y-2">
                   <li>

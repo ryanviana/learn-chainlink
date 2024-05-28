@@ -5,12 +5,11 @@ import Image from "next/image";
 import type { NextPage } from "next";
 import { useTheme } from "next-themes";
 import { parseEther } from "viem";
-import { mainnet } from "viem/chains";
+import { useAccount } from "wagmi";
 import { PriceCard } from "~~/components/learn-chainlink/PriceCard";
 import { EtherInput } from "~~/components/scaffold-eth";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
-import { notification } from "~~/utils/scaffold-eth";
-import { fetchEthUsdPrices } from "~~/utils/scaffold-eth";
+import { fetchEthUsdPrices, notification } from "~~/utils/scaffold-eth";
 
 const FlipTheCoin: NextPage = () => {
   const coinImage = "https://assets.coingecko.com/coins/images/279/large/ethereum.png?1595348880";
@@ -33,11 +32,12 @@ const FlipTheCoin: NextPage = () => {
   const isDarkMode = resolvedTheme === "dark";
 
   const { writeContractAsync: writeYourContractAsync } = useScaffoldWriteContract("FlipTheCoin");
+  const { address: connectedAddress } = useAccount();
 
   const { data: numberOfBets } = useScaffoldReadContract({
     contractName: "FlipTheCoin",
     functionName: "getNumberOfBets",
-    args: ["0xF3b64dD5AF39d8fF0c614F7637e339e31466c4C3"],
+    args: [connectedAddress],
     watch: true,
   });
 
